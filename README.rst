@@ -57,3 +57,21 @@ for example::
         "list": true
       }
     }
+
+Client
+------
+
+The client auto-discovers schemas, and exposes a proxy to interact with the
+API. These are the basic methods::
+
+    c = Client("User")
+
+    c.find(0)
+    c.save(user)
+      c.create(user)
+      c.update(user)
+    c.delete(user)
+    c.list()
+
+Note: ``save()`` will run a ``create`` if the object has no pk, or an
+``update`` if it does.
