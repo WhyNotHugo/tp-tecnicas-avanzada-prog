@@ -1,0 +1,7 @@
+.*.sw?
+*.pyc
+/build
+/dist
+/.eggs
+.tox
+.coverage
