@@ -35,6 +35,14 @@ class Server(object):
         app.add_url_rule('{}/<int:id>'.format(resource.route),
                          view_func=resource_view, methods=('GET', 'PUT', 'DELETE'))
 
+        self.add_endpoints_rule()
+
+    def add_endpoints_rule(self):
+        endpoints = json.dumps([resource.route for resource in self.resources])
+
+        @self.app.route('/_endpoints')
+        def endpoints_view():
+            return endpoints
 
 class Resource(object):
 
