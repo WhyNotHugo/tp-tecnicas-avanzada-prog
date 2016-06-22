@@ -42,10 +42,14 @@ class Resource(object):
         self.model = model
         self.name = model.__tablename__
         self.route = '/{}'.format(self.name)
-        self.columns = model.__table__.columns
+        self.columns = model.__table__.columns.values()
 
     def schema_view(self):
-        schema = json.dumps(dict(keys=self.columns.keys()))
+        columns = [(column.name, {
+            'type': column.type.python_type.__name__,
+            'primary_key': column.primary_key
+        }) for column in self.columns]
+        schema = json.dumps(columns)
         return lambda: schema
 
     def resource_view(self):
