@@ -11,7 +11,7 @@ class Server(object):
         self.resources = []
 
     def init_db(self, connection_uri):
-        self.db = SQLAlchemy(connection_uri)
+        self.db = SQLAlchemy(connection_uri, app=self.app)
         return self.db
 
     def register(self, model):
