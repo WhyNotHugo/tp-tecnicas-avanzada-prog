@@ -62,14 +62,16 @@ Client
 The client auto-discovers schemas, and exposes a proxy to interact with the
 API. These are the basic methods::
 
-    c = Client("User")
-
-    c.find(0)
-    c.save(user)
-    c.create(user)
-    c.update(user)
-    c.delete(user)
-    c.list()
+    client = Client('http://localhost')
+    client.resources
+    resource = client.resource('users')
+    resource.schema
+    resource.get(1)
+    resource.save(user)
+    resource.create(user)
+    resource.update(id, user)
+    resource.delete(id)
+    resource.list()
 
 Note: ``save()`` will run a ``create`` if the object has no pk, or an
 ``update`` if it does.
