@@ -1,9 +1,9 @@
 Server side
 ===========
 
-Models are registered with the API by decorating them with @register::
+Models are registered with the API by decorating them with @app.register::
 
-    @register
+    @app.register
     class User:
         pass
 
@@ -15,12 +15,10 @@ Endpoints
 
 Endpoints are listed by requesting ``/_endpoints``, for example::
 
-    {
-      "endpoints": [
-        "/users",
-        "/cars"
-      ]
-    }
+    [
+      "/users",
+      "/cars"
+    ]
 
 Schemas
 -------
@@ -29,13 +27,13 @@ Schemas are described by performing ``GET`` to a ``_schema`` to any endpoint,
 for example::
 
     {
-      "name": {
-        "type": "str",
-        "null": false
-      },
       "id": {
         "type": "int",
         "pk": true
+      },
+      "name": {
+        "type": "str",
+        "null": false
       },
       "dateOfBirth": {
         "type": "timestamp",
@@ -68,8 +66,8 @@ API. These are the basic methods::
 
     c.find(0)
     c.save(user)
-      c.create(user)
-      c.update(user)
+    c.create(user)
+    c.update(user)
     c.delete(user)
     c.list()
 
