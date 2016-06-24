@@ -24,7 +24,6 @@ class Server(object):
 
     def register_error_handler(self):
         def error_handler(e):
-
             response = jsonify(error=str(e), message=e.description)
             response.status_code = getattr(e, 'code', 500)
             return response
@@ -34,20 +33,19 @@ class Server(object):
             app.register_error_handler(code, error_handler)
 
     def add_rules(self, resource):
-        app = self.app
-        app.add_url_rule('{}/_schema'.format(resource.route),
+        self.app.add_url_rule('{}/_schema'.format(resource.route),
                          '{}-schema'.format(resource.name),
                          view_func=resource.schema_view())
 
         resource_view = resource.resource_view()
-        app.add_url_rule('{}/'.format(resource.route),
+        self.app.add_url_rule('{}/'.format(resource.route),
                          view_func=resource_view, methods=('GET', 'POST'))
-        app.add_url_rule('{}/<int:id>'.format(resource.route),
+        self.app.add_url_rule('{}/<int:id>'.format(resource.route),
                          view_func=resource_view, methods=('GET', 'PUT', 'DELETE'))
 
-        self.add_endpoints_rule()
+        self.register_endpoints_view()
 
-    def add_endpoints_rule(self):
+    def register_endpoints_view(self):
         endpoints = json.dumps([resource.route for resource in self.resources])
 
         @self.app.route('/_endpoints')
