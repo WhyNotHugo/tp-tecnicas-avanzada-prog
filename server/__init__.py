@@ -98,7 +98,7 @@ class Resource(object):
         return jsonify(self.model.index())
 
     def create(self):
-        return jsonify(self.model.create(request.json))
+        return jsonify(self.model.create(request.json)), 201
 
     def show(self, id):
         return jsonify(self.model.show(id))
