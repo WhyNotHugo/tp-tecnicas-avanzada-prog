@@ -1,8 +1,12 @@
 import json
 
+from collections import OrderedDict
+
 from flask import Flask, request, jsonify
-from werkzeug.exceptions import default_exceptions
 from sqlalchemy_wrapper import SQLAlchemy
+
+from werkzeug.exceptions import default_exceptions, HTTPException, BadRequest, NotFound
+from sqlalchemy.exc import IntegrityError
 
 
 class Server(object):
@@ -17,6 +21,7 @@ class Server(object):
         return self.db
 
     def register(self, model):
+        model.columns = model.__table__.columns.values()
         resource = Resource(model)
         self.resources.append(resource)
         self.add_rules(resource)
@@ -24,7 +29,10 @@ class Server(object):
 
     def register_error_handler(self):
         def error_handler(e):
-            response = jsonify(error=str(e), message=e.description)
+            if isinstance(e, HTTPException):
+                response = jsonify(error=str(e), message=e.get_description())
+            else:
+                response = jsonify(error='Internal Server Error')
             response.status_code = getattr(e, 'code', 500)
             return response
 
@@ -62,13 +70,12 @@ class Resource(object):
         self.model = model
         self.name = model.__tablename__
         self.route = '/{}'.format(self.name)
-        self.columns = model.__table__.columns.values()
 
     def schema_view(self):
         columns = [(column.name, {
             'type': column.type.python_type.__name__,
             'primary_key': column.primary_key
-        }) for column in self.columns]
+        }) for column in self.model.columns]
         schema = json.dumps(columns)
         return lambda: schema
 
@@ -106,3 +113,52 @@ class Resource(object):
 
     def delete(self, id):
         return jsonify(self.model.delete(id))
+
+
+class ModelMixin(object):
+
+    @classmethod
+    def index(cls):
+        return [x.to_dict() for x in cls.db.query(cls).all()]
+
+    @classmethod
+    def create(cls, data):
+        x = cls()
+        for column in cls.columns:
+            setattr(x, column.name, data.get(column.name))
+
+        try:
+            cls.db.add(x)
+            cls.db.commit()
+        except IntegrityError as e:
+            raise BadRequest(str(e))
+        return x.to_dict()
+
+    @classmethod
+    def show(cls, id):
+        return cls.db.query(cls).get_or_error(id, NotFound()).to_dict()
+
+    @classmethod
+    def update(cls, id, data):
+        x = cls.db.query(cls).get_or_error(id, NotFound())
+        for column in cls.columns:
+            if column.name in data:
+                setattr(x, column.name, data.get(column.name))
+
+        try:
+            cls.db.add(x)
+            cls.db.commit()
+        except IntegrityError as e:
+            raise BadRequest(str(e))
+        return x.to_dict()
+
+    @classmethod
+    def delete(cls, id):
+        x = cls.db.query(cls).get_or_error(id, NotFound())
+        cls.db.delete(x)
+        cls.db.commit()
+
+    def to_dict(self):
+        return OrderedDict([
+            (column.name, getattr(self, column.name)) for column in self.columns
+        ])
