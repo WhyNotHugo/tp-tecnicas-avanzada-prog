@@ -1,6 +1,7 @@
 import json
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
+from werkzeug.exceptions import default_exceptions
 from sqlalchemy_wrapper import SQLAlchemy
 
 
@@ -9,6 +10,7 @@ class Server(object):
     def __init__(self):
         self.app = Flask('')
         self.resources = []
+        self.register_error_handler()
 
     def init_db(self, connection_uri):
         self.db = SQLAlchemy(connection_uri, app=self.app)
@@ -20,8 +22,16 @@ class Server(object):
         self.add_rules(resource)
         return model
 
-    def run_server(self):
-        self.app.run(debug=True)
+    def register_error_handler(self):
+        def error_handler(e):
+
+            response = jsonify(error=str(e), message=e.description)
+            response.status_code = getattr(e, 'code', 500)
+            return response
+
+        app = self.app
+        for code in default_exceptions.keys():
+            app.register_error_handler(code, error_handler)
 
     def add_rules(self, resource):
         app = self.app
@@ -43,6 +53,10 @@ class Server(object):
         @self.app.route('/_endpoints')
         def endpoints_view():
             return endpoints
+
+    def run_server(self):
+        self.app.run()
+
 
 class Resource(object):
 
@@ -81,16 +95,16 @@ class Resource(object):
         return view
 
     def index(self):
-        return 'index'
+        return jsonify(self.model.index())
 
     def create(self):
-        return 'create'
+        return jsonify(self.model.create(request.json))
 
     def show(self, id):
-        return 'show'
+        return jsonify(self.model.show(id))
 
     def update(self, id):
-        return 'update'
+        return jsonify(self.model.update(id, request.json))
 
     def delete(self, id):
-        return 'delete'
+        return jsonify(self.model.delete(id))
