@@ -54,7 +54,7 @@ class Server(object):
         self.register_endpoints_view()
 
     def register_endpoints_view(self):
-        endpoints = json.dumps([resource.route for resource in self.resources])
+        endpoints = json.dumps([resource.name for resource in self.resources])
 
         @self.app.route('/_endpoints')
         def endpoints_view():
