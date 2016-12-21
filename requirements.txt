@@ -1,2 +1,3 @@
 Flask==0.11.1
 SQLAlchemy-Wrapper==1.7.0
+requests==2.12.4
