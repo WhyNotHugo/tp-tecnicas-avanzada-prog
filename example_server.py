@@ -1,4 +1,4 @@
-from tp.server import Server, ModelMixin
+from tp.server import ModelMixin, Server
 
 
 app = Server()
