@@ -5,7 +5,8 @@ from collections import OrderedDict
 from flask import Flask, request, jsonify
 from sqlalchemy_wrapper import SQLAlchemy
 
-from werkzeug.exceptions import default_exceptions, HTTPException, BadRequest, NotFound
+from werkzeug.exceptions import default_exceptions, HTTPException, \
+    BadRequest, NotFound
 from sqlalchemy.exc import IntegrityError
 
 
@@ -41,15 +42,23 @@ class Server(object):
             app.register_error_handler(code, error_handler)
 
     def add_rules(self, resource):
-        self.app.add_url_rule('{}/_schema'.format(resource.route),
-                         '{}-schema'.format(resource.name),
-                         view_func=resource.schema_view())
+        self.app.add_url_rule(
+            '{}/_schema'.format(resource.route),
+            '{}-schema'.format(resource.name),
+            view_func=resource.schema_view()
+        )
 
         resource_view = resource.resource_view()
-        self.app.add_url_rule('{}/'.format(resource.route),
-                         view_func=resource_view, methods=('GET', 'POST'))
-        self.app.add_url_rule('{}/<int:id>'.format(resource.route),
-                         view_func=resource_view, methods=('GET', 'PUT', 'DELETE'))
+        self.app.add_url_rule(
+            '{}/'.format(resource.route),
+            view_func=resource_view,
+            methods=('GET', 'POST')
+        )
+        self.app.add_url_rule(
+            '{}/<int:id>'.format(resource.route),
+            view_func=resource_view,
+            methods=('GET', 'PUT', 'DELETE')
+        )
 
         self.register_endpoints_view()
 
@@ -160,5 +169,6 @@ class ModelMixin(object):
 
     def to_dict(self):
         return OrderedDict([
-            (column.name, getattr(self, column.name)) for column in self.columns
+            (column.name, getattr(self, column.name))
+            for column in self.columns
         ])

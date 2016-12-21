@@ -1,5 +1,4 @@
 import requests
-import json
 
 HEADERS = {'Content-Type': 'application/json'}
 
